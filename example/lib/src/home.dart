@@ -152,19 +152,27 @@ class HomePageScaffold extends StatelessWidget {
                     ),
                   ),
                   18.verticalSpace,
-                  Text('Device width:${ScreenUtil().screenWidth}dp'),
-                  Text('Device height:${ScreenUtil().screenHeight}dp'),
-                  Text('Device pixel density:${ScreenUtil().pixelRatio}'),
+                  Text('Device width:${ScreenUtil().screenWidth}dp',
+                      style: TextStyle(color: Colors.deepPurple)),
+                  Text('Device height:${ScreenUtil().screenHeight}dp',
+                      style: TextStyle(color: Colors.deepPurple)),
+                  Text('Device pixel density:${ScreenUtil().pixelRatio}',
+                      style: TextStyle(color: Colors.deepPurple)),
                   Text(
-                      'Bottom safe zone distance:${ScreenUtil().bottomBarHeight}dp'),
-                  Text('Status bar height:${ScreenUtil().statusBarHeight}dp'),
+                      'Bottom safe zone distance:${ScreenUtil().bottomBarHeight}dp',
+                      style: TextStyle(color: Colors.deepPurple)),
+                  Text('Status bar height:${ScreenUtil().statusBarHeight}dp',
+                      style: TextStyle(color: Colors.deepPurple)),
                   Text(
-                      'The ratio of actual width to UI design:${ScreenUtil().scaleWidth}'),
+                      'The ratio of actual width to UI design:${ScreenUtil().scaleWidth}',
+                      style: TextStyle(color: Colors.deepPurple)),
                   Text(
-                      'The ratio of actual height to UI design:${ScreenUtil().scaleHeight}'),
+                      'The ratio of actual height to UI design:${ScreenUtil().scaleHeight}',
+                      style: TextStyle(color: Colors.deepPurple)),
                   10.verticalSpace,
                   Text(
-                      'System font scaling factor:${ScreenUtil().textScaleFactor}'),
+                      'System font scaling factor:${ScreenUtil().textScaleFactor}',
+                      style: TextStyle(color: Colors.deepPurple)),
                   5.verticalSpace,
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -187,6 +195,11 @@ class HomePageScaffold extends StatelessWidget {
                     ],
                   ),
                 ],
+              ),
+            ),
+            TextField(
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
               ),
             ),
           ],

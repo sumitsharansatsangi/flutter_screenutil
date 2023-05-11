@@ -77,8 +77,10 @@ class _ScreenUtilInitState extends State<ScreenUtilInit>
         return data;
       }
     }
-
-    return MediaQueryData.fromWindow(binding.window);
+    if (binding.platformDispatcher.implicitView != null) {
+      return MediaQueryData.fromView(binding.platformDispatcher.implicitView!);
+    }
+    return MediaQueryData.fromView(binding.platformDispatcher.views.first);
   }
 
   Widget get child {

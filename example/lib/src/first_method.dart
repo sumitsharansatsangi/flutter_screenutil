@@ -13,12 +13,14 @@ class MyApp extends StatelessWidget {
       builder: (_, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          useInheritedMediaQuery: true,
           title: 'First Method',
           // You can use the library anywhere in the app even in theme
           theme: ThemeData(
-            primarySwatch: Colors.blue,
-            textTheme: Typography.englishLike2018.apply(fontSizeFactor: 1.sp),
+            useMaterial3: true,
+            colorScheme:
+                ColorScheme.fromSeed(seedColor: Colors.deepPurple.shade900),
+            textTheme: Typography.englishLike2018
+                .apply(fontSizeFactor: 1.sp, displayColor: Colors.deepPurple),
           ),
           home: child,
         );

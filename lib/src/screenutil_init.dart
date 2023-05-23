@@ -39,7 +39,7 @@ class ScreenUtilInit extends StatefulWidget {
       this.designSize = ScreenUtil.defaultSize,
       this.splitScreenMode = false,
       this.minTextAdapt = false,
-      this.useInheritedMediaQuery = false,
+      this.useInheritedMediaQuery = true,
       this.scaleByHeight = false})
       : super(key: key);
 
@@ -77,10 +77,14 @@ class _ScreenUtilInitState extends State<ScreenUtilInit>
         return data;
       }
     }
+
     if (binding.platformDispatcher.implicitView != null) {
       return MediaQueryData.fromView(binding.platformDispatcher.implicitView!);
     }
-    return MediaQueryData.fromView(binding.platformDispatcher.views.first);
+    if (binding.platformDispatcher.views.isNotEmpty) {
+      return MediaQueryData.fromView(binding.platformDispatcher.views.first);
+    }
+    return MediaQueryData.fromView(View.of(context));
   }
 
   Widget get child {
@@ -95,7 +99,6 @@ class _ScreenUtilInitState extends State<ScreenUtilInit>
   @override
   void initState() {
     super.initState();
-    // mediaQueryData = newData;
     binding.addObserver(this);
   }
 

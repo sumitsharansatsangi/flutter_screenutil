@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class HomePageScaffold extends StatelessWidget {
   const HomePageScaffold({Key? key, this.title = ''}) : super(key: key);
 
-  void printScreenInformation() {
+  void printScreenInformation(BuildContext context) {
     print('Device Size:${Size(1.sw, 1.sh)}');
     print('Device pixel density:${ScreenUtil().pixelRatio}');
     print('Bottom safe zone distance dp:${ScreenUtil().bottomBarHeight}dp');
@@ -21,7 +21,7 @@ class HomePageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    printScreenInformation();
+    printScreenInformation(context);
 
     /// Uncomment if you wanna force current widget to be rebuilt with updated values
     /// Must use it if you use the second method, or if you use ScreenUtilInit's child.
@@ -98,7 +98,13 @@ class HomePageScaffold extends StatelessWidget {
                           return Dialog(
                             child: Padding(
                               padding: EdgeInsets.all(12.r),
-                              child: const Text('Dialog'),
+                              child: Column(
+                                children: [
+                                  const Text('Dialog'),
+                                  Spacer(),
+                                  TextField(),
+                                ],
+                              ),
                             ),
                           );
                         },
@@ -123,8 +129,10 @@ class HomePageScaffold extends StatelessWidget {
                       showModalBottomSheet<void>(
                         context: context,
                         builder: (BuildContext context) {
+                          print('BottomSheet build');
                           return Container(
-                            height: 200.w,
+                            height: 200.w +
+                                MediaQuery.of(context).viewInsets.bottom,
                             color: Colors.amber,
                             child: Center(
                               child: Column(
@@ -132,10 +140,16 @@ class HomePageScaffold extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
                                   const Text('Modal BottomSheet'),
+                                  Spacer(),
+                                  TextField(),
                                   ElevatedButton(
                                     child: const Text('Close BottomSheet'),
                                     onPressed: Navigator.of(context).pop,
-                                  )
+                                  ),
+                                  SizedBox(
+                                      height: MediaQuery.of(context)
+                                          .viewInsets
+                                          .bottom),
                                 ],
                               ),
                             ),

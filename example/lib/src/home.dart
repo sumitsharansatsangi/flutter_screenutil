@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class HomePageScaffold extends StatelessWidget {
+class HomePageScaffold extends StatelessWidget with SU {
   const HomePageScaffold({Key? key, this.title = ''}) : super(key: key);
 
   void printScreenInformation(BuildContext context) {
@@ -129,7 +129,6 @@ class HomePageScaffold extends StatelessWidget {
                       showModalBottomSheet<void>(
                         context: context,
                         builder: (BuildContext context) {
-                          print('BottomSheet build');
                           return Container(
                             height: 200.w +
                                 MediaQuery.of(context).viewInsets.bottom,

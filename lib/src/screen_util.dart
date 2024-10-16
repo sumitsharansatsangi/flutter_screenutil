@@ -3,7 +3,8 @@
  * email: zhuoyuan93@gmail.com
  */
 
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform;
+
 import 'dart:math' show min, max;
 import 'dart:ui' as ui show FlutterView;
 
@@ -14,6 +15,10 @@ typedef FontSizeResolver = double Function(num fontSize, ScreenUtil instance);
 class ScreenUtil {
   static const Size defaultSize = Size(360, 690);
   static ScreenUtil _instance = ScreenUtil._();
+
+  static bool Function() _enableScaleWH = () => true;
+  static bool Function() _enableScaleText = () => true;
+
 
   /// UI设计中手机尺寸 , dp
   /// Size of the phone in UI Design , dp
@@ -30,6 +35,16 @@ class ScreenUtil {
   ScreenUtil._();
 
   factory ScreenUtil() => _instance;
+
+  /// Enable scale
+  ///
+  /// if the enableWH return false, the width and the height scale ratio will be 1
+  /// if the enableText return false, the text scale ratio will be 1
+  ///
+  static void enableScale({bool Function()? enableWH, bool Function()? enableText}) {
+    _enableScaleWH = enableWH ?? () => true;
+    _enableScaleText = enableText ?? () => true;
+  }
 
   /// Manually wait for window size to be initialized
   ///
@@ -140,8 +155,9 @@ class ScreenUtil {
     bool minTextAdapt = false,
     FontSizeResolver? fontSizeResolver,
   }) {
+    final view = View.maybeOf(context);
     return configure(
-      data: MediaQuery.maybeOf(context),
+      data: view != null ? MediaQueryData.fromView(view) : null,
       designSize: designSize,
       splitScreenMode: splitScreenMode,
       minTextAdapt: minTextAdapt,
@@ -157,8 +173,8 @@ class ScreenUtil {
     FontSizeResolver? fontSizeResolver,
   }) {
     return ScreenUtil.ensureScreenSize().then((_) {
-      return configure(
-        data: MediaQuery.maybeOf(context),
+      return init(
+        context,
         designSize: designSize,
         minTextAdapt: minTextAdapt,
         splitScreenMode: splitScreenMode,
@@ -173,7 +189,7 @@ class ScreenUtil {
 
   /// 每个逻辑像素的字体像素数，字体的缩放比例
   /// The number of font pixels for each logical pixel.
-  double get textScaleFactor => _data.textScaleFactor;
+  TextScaler get textScaleFactor =>    _data.textScaler;
 
   /// 设备的像素密度
   /// The size of the media in logical pixels (e.g, the size of the screen).
@@ -197,15 +213,15 @@ class ScreenUtil {
 
   /// 实际尺寸与UI设计的比例
   /// The ratio of actual width to UI design
-  double get scaleWidth => screenWidth / _uiSize.width;
+  double get scaleWidth => !_enableScaleWH() ? 1 : screenWidth / _uiSize.width;
 
   /// The ratio of actual height to UI design
   double get scaleHeight =>
-      (_splitScreenMode ? max(screenHeight, 700) : screenHeight) /
+      !_enableScaleWH() ? 1 : (_splitScreenMode ? max(screenHeight, 700) : screenHeight) /
       _uiSize.height;
 
   double get scaleText =>
-      _minTextAdapt ? min(scaleWidth, scaleHeight) : scaleWidth;
+      !_enableScaleText() ? 1 : (_minTextAdapt ? min(scaleWidth, scaleHeight) : scaleWidth);
 
   /// 根据UI设计的设备宽度适配
   /// 高度也可以根据这个来做适配可以保证不变形,比如你想要一个正方形的时候.
@@ -241,34 +257,43 @@ class ScreenUtil {
   double setSp(num fontSize) =>
       fontSizeResolver?.call(fontSize, _instance) ?? fontSize * scaleText;
 
-  DeviceType deviceType() {
-    DeviceType deviceType;
-    switch (Platform.operatingSystem) {
-      case 'android':
-      case 'ios':
-        deviceType = DeviceType.mobile;
-        if ((orientation == Orientation.portrait && screenWidth < 600) ||
-            (orientation == Orientation.landscape && screenHeight < 600)) {
-          deviceType = DeviceType.mobile;
-        } else {
-          deviceType = DeviceType.tablet;
+  DeviceType deviceType(BuildContext context) {
+    var deviceType = DeviceType.web;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final orientation = MediaQuery.of(context).orientation;
+
+    if (kIsWeb) {
+      deviceType = DeviceType.web;
+    } else {
+      bool isMobile = defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.android;
+      bool isTablet =
+          (orientation == Orientation.portrait && screenWidth >= 600) ||
+              (orientation == Orientation.landscape && screenHeight >= 600);
+
+      if (isMobile) {
+        deviceType = isTablet ? DeviceType.tablet : DeviceType.mobile;
+      } else {
+        switch (defaultTargetPlatform) {
+          case TargetPlatform.linux:
+            deviceType = DeviceType.linux;
+            break;
+          case TargetPlatform.macOS:
+            deviceType = DeviceType.mac;
+            break;
+          case TargetPlatform.windows:
+            deviceType = DeviceType.windows;
+            break;
+          case TargetPlatform.fuchsia:
+            deviceType = DeviceType.fuchsia;
+            break;
+          default:
+            break;
         }
-        break;
-      case 'linux':
-        deviceType = DeviceType.linux;
-        break;
-      case 'macos':
-        deviceType = DeviceType.mac;
-        break;
-      case 'windows':
-        deviceType = DeviceType.windows;
-        break;
-      case 'fuchsia':
-        deviceType = DeviceType.fuchsia;
-        break;
-      default:
-        deviceType = DeviceType.web;
+      }
     }
+
     return deviceType;
   }
 

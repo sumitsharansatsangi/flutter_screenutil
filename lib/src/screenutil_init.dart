@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
-import './_flutter_widgets.dart';
 
-import 'screenutil_mixin.dart';
+import './_flutter_widgets.dart';
 import 'screen_util.dart';
+import 'screenutil_mixin.dart';
 
 typedef RebuildFactor = bool Function(MediaQueryData old, MediaQueryData data);
 
@@ -74,7 +74,10 @@ class ScreenUtilInit extends StatefulWidget {
     this.minTextAdapt = false,
     this.useInheritedMediaQuery = false,
     this.ensureScreenSize = false,
+    this.enableScaleWH,
+    this.enableScaleText,
     this.responsiveWidgets,
+    this.excludeWidgets,
     this.fontSizeResolver = FontSizeResolvers.width,
   }) : super(key: key);
 
@@ -84,20 +87,23 @@ class ScreenUtilInit extends StatefulWidget {
   final bool minTextAdapt;
   final bool useInheritedMediaQuery;
   final bool ensureScreenSize;
+  final bool Function()? enableScaleWH;
+  final bool Function()? enableScaleText;
   final RebuildFactor rebuildFactor;
   final FontSizeResolver fontSizeResolver;
 
   /// The [Size] of the device in the design draft, in dp
   final Size designSize;
   final Iterable<String>? responsiveWidgets;
+  final Iterable<String>? excludeWidgets;
 
   @override
   State<ScreenUtilInit> createState() => _ScreenUtilInitState();
 }
 
-class _ScreenUtilInitState extends State<ScreenUtilInit>
-    with WidgetsBindingObserver {
+class _ScreenUtilInitState extends State<ScreenUtilInit> with WidgetsBindingObserver {
   final _canMarkedToBuild = HashSet<String>();
+  final _excludedWidgets = HashSet<String>();
   MediaQueryData? _mediaQueryData;
   final _binding = WidgetsBinding.instance;
   final _screenSizeCompleter = Completer<void>();
@@ -107,6 +113,9 @@ class _ScreenUtilInitState extends State<ScreenUtilInit>
     if (widget.responsiveWidgets != null) {
       _canMarkedToBuild.addAll(widget.responsiveWidgets!);
     }
+
+    ScreenUtil.enableScale(enableWH: widget.enableScaleWH, enableText: widget.enableScaleText);
+
     _validateSize().then(_screenSizeCompleter.complete);
 
     super.initState();
@@ -126,10 +135,9 @@ class _ScreenUtilInitState extends State<ScreenUtilInit>
   }
 
   MediaQueryData? _newData() {
-    MediaQueryData? mq = MediaQuery.maybeOf(context);
-    if (mq == null) mq = MediaQueryData.fromView(View.of(context));
-
-    return mq;
+    final view = View.maybeOf(context);
+    if (view != null) return MediaQueryData.fromView(view);
+    return null;
   }
 
   Future<void> _validateSize() async {
@@ -138,6 +146,7 @@ class _ScreenUtilInitState extends State<ScreenUtilInit>
 
   void _markNeedsBuildIfAllowed(Element el) {
     final widgetName = el.widget.runtimeType.toString();
+    if (_excludedWidgets.contains(widgetName)) return;
     final allowed = widget is SU ||
         _canMarkedToBuild.contains(widgetName) ||
         !(widgetName.startsWith('_') || flutterWidgets.contains(widgetName));

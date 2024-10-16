@@ -196,7 +196,7 @@ class HomePageScaffold extends StatelessWidget with SU {
                           color: Colors.black,
                           fontSize: 16.sp,
                         ),
-                        textScaleFactor: 1.0,
+                        textScaler: TextScaler.noScaling,
                       ),
                       Text(
                         '16sp,if data is not set in MediaQuery,my font size will change with the system.',
